@@ -85,12 +85,17 @@ acf_diff <- acf(diff_ts_serie, lag.max = 24, main = "Autocorrélation des donné
 pacf_diff <- pacf(diff_ts_serie, lag.max = 24, main = "Autocorrélation partielle des données différenciées")
 
 # L'ACF est significative jusqu'à l'ordre 5 au maximum
-# La PACF est significative jusqu'à l'ordre 12 au maximum
+# La PACF est significative jusqu'à l'ordre 7 au maximum
 
-# On a choisi le modèle ARMA(5,12)
+# On a choisi le modèle ARMA(5,7)
 
+library(stats)
 
+arma_model <- arima(diff_ts_serie, order=c(5,0,7))
 
+summary(arma_model)
+
+arima(x = diff_ts_serie, order = c(5,0,7), include.mean=T)
 
 
 #Question 5
