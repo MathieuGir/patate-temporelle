@@ -156,7 +156,16 @@ arma22
 #En ayant comparé les Sigma carré, la vraisemblance, on retient le modèle 2,2
 # L'auto arima nous donne un ARMA(2,1) ; à voir si on change pas pour avoir un modèle plus parcimonieux
 
+residuals_arma22 <- residuals(arma22)
+
+# Test de portemanteau pour les résidus
+ljung_box_test <- Box.test(residuals_arma22, lag = 12, type = "Ljung-Box")
+print(ljung_box_test)
 
 #Question 5
 
 #On choisit un ARIMA(2,1,2)
+
+### Partie III
+
+
