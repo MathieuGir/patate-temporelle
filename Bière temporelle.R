@@ -53,7 +53,7 @@ regression <- lm(ts_serie ~ index(ts_serie))
 residuals <- residuals(regression)
 
 Qtests(adf@test$lm$residuals[0:24], length(adf@test$lm$coefficients))
-# Absence of residual autocorrelation: the test is valid
+# Absence d'autocorrélations des résidus : test valide.
 adf
 
 
@@ -62,14 +62,14 @@ pp.test(ts_serie)
 
 # The unit root hypothesis is rejected by both tests, so it seems stationary, which is inconsistent with the form of the series when plotted
 acf(ts_serie)
-# Too many autocorrelations, the series is very persistent, which can pose a problem
+# On repère trop d'autocorrélations. La série est persistante, ce qui pourrait être un problème pour la suite.
 
-# KPSS Test for the original series xm
+# KPSS Test pour la série originale ts_serie
 kpss_test <- ur.kpss(ts_serie, type = "mu")
 cat("KPSS Test for the original series xm:\n")
 print(summary(kpss_test))
 
-##KPSS rejects the stationarity of xm at 1%!
+##KPSS rejette la stationnarité de la série à 1%!
 
 
 # On différencie la série à l'ordre 1
@@ -77,15 +77,15 @@ print(summary(kpss_test))
 ts_serie_diff <- diff(ts_serie,1) # First difference
 adf_diff <- adfTest(ts_serie_diff, lag=0, type="ct")
 
-# The series is stationary
+# La série est stationnaire.
 
 Qtests(adf_diff@test$lm$residuals[0:24], length(adf_diff@test$lm$coefficients))
-# Hypothesis of no correlation not rejected, test valid
+# Hypothèse de non corrélation non rejetée, donc le test est valide.
 adf_diff
 
 
 pp.test(ts_serie_diff)
-# The unit root hypotheses are rejected, so we will say the series is stationary
+# L'hypothèse de racine unitaire est rejetée. La série est stationnaire.
 acf(ts_serie_diff)
 
 kpss_test_diff <- ur.kpss(ts_serie_diff, type = "mu")
@@ -101,7 +101,7 @@ autoplot(ts_serie_diff) + ggtitle("Série temporelle différenciée de l'IPI de 
 
 #Question 4
 
-acf(ts_serie_diff) # The first-order autocorrelation (total or partial, it’s the same thing) is about -0.35, which is small and far from being equal to 1. The series seems stationary
+acf(ts_serie_diff) #  L'autocorrélation de premier ordre avoisine -0.35 ce qui est inférieur et assez éloigné de 1. La série semble stationnaire.
 pacf(ts_serie_diff)
 
 pmax <- 9
