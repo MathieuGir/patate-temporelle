@@ -53,7 +53,7 @@ regression <- lm(ts_serie ~ index(ts_serie))
 residuals <- residuals(regression)
 
 Qtests(adf@test$lm$residuals[0:24], length(adf@test$lm$coefficients))
-# Absence d'autocorrélations des résidus : test valide.
+# Absence of residual autocorrelation: the test is valid
 adf
 
 
@@ -62,14 +62,14 @@ pp.test(ts_serie)
 
 # The unit root hypothesis is rejected by both tests, so it seems stationary, which is inconsistent with the form of the series when plotted
 acf(ts_serie)
-# On repère trop d'autocorrélations. La série est persistante, ce qui pourrait être un problème pour la suite.
+# Too many autocorrelations, the series is very persistent, which can pose a problem
 
-# KPSS Test pour la série originale ts_serie
+# KPSS Test for the original series xm
 kpss_test <- ur.kpss(ts_serie, type = "mu")
 cat("KPSS Test for the original series xm:\n")
 print(summary(kpss_test))
 
-##KPSS rejette la stationnarité de la série à 1%!
+##KPSS rejects the stationarity of xm at 1%!
 
 
 # On différencie la série à l'ordre 1
@@ -77,15 +77,15 @@ print(summary(kpss_test))
 ts_serie_diff <- diff(ts_serie,1) # First difference
 adf_diff <- adfTest(ts_serie_diff, lag=0, type="ct")
 
-# La série est stationnaire.
+# The series is stationary
 
 Qtests(adf_diff@test$lm$residuals[0:24], length(adf_diff@test$lm$coefficients))
-# Hypothèse de non corrélation non rejetée, donc le test est valide.
+# Hypothesis of no correlation not rejected, test valid
 adf_diff
 
 
 pp.test(ts_serie_diff)
-# L'hypothèse de racine unitaire est rejetée. La série est stationnaire.
+# The unit root hypotheses are rejected, so we will say the series is stationary
 acf(ts_serie_diff)
 
 kpss_test_diff <- ur.kpss(ts_serie_diff, type = "mu")
@@ -101,7 +101,7 @@ autoplot(ts_serie_diff) + ggtitle("Série temporelle différenciée de l'IPI de 
 
 #Question 4
 
-acf(ts_serie_diff) #  L'autocorrélation de premier ordre avoisine -0.35 ce qui est inférieur et assez éloigné de 1. La série semble stationnaire.
+acf(ts_serie_diff) # The first-order autocorrelation (total or partial, it’s the same thing) is about -0.35, which is small and far from being equal to 1. The series seems stationary
 pacf(ts_serie_diff)
 
 pmax <- 9
@@ -148,7 +148,6 @@ arma11
 arma21 <- arima(ts_serie_diff, order=c(2,1,1), include.mean = F)
 arma21
 
-
 #Test ARMA(2,2)
 arma22 <- arima(ts_serie_diff, order=c(2,1,2))
 arma22 
@@ -161,6 +160,8 @@ residuals_arma22 <- residuals(arma22)
 # Test de portemanteau pour les résidus
 ljung_box_test <- Box.test(residuals_arma22, lag = 12, type = "Ljung-Box")
 print(ljung_box_test)
+acf(residuals_arma22)
+autoplot(residuals_arma22)
 
 #Question 5
 
@@ -168,4 +169,103 @@ print(ljung_box_test)
 
 ### Partie III
 
+var_res <- arma22$sigma2
+phi1 <- -arma22$coef[1] #coeff phi1
+theta1 <- -arma22$coef[3] #coeff theta1
+sigma_epsilon <- var_residus
+Sigma <- sigma * matrix(c(1, phi1 + theta1, phi1 + theta1, (1 + phi1 + theta1)^2), nrow = 2) # Covariance Matrix
+Sigma
 
+
+residuals <- residuals(arma22)
+residuals
+residuals[1]
+residuals[2]
+errors <- c(residuals[2], residuals[2] + (1 + phi1 + theta1) * residuals[1])
+errors
+
+t <- t(errors) %*% solve(Sigma) %*% errors
+
+# Calculate the quantile of the chi-squared distribution
+alpha <- 0.05 # Confidence level
+q <- qchisq(1 - alpha, df = 2)
+
+
+# Confidence region
+confidence_region <- qchisq(1 - alpha, df = 2)
+confidence_region
+
+
+predictions <- predict(arma22, n.ahead = 2)
+pred_values <- predictions$pred
+pred_se <- predictions$se
+pred_interval_upper <- pred_values + qnorm(1 - alpha / 2) * pred_se
+pred_interval_lower <- pred_values - qnorm(1 - alpha / 2) * pred_se
+
+
+# Générer les points de l'ellipse
+library(MASS)
+theta <- seq(0, 2*pi, length.out=100)
+circle <- cbind(cos(theta), sin(theta))
+
+
+eigen_Sigma <- eigen(Sigma)
+values <- eigen_Sigma$values
+vectors <- eigen_Sigma$vectors
+values
+vectors
+
+# Générer les points de l'ellipse
+theta <- seq(0, 2*pi, length.out = 5000)
+circle <- cbind(cos(theta), sin(theta))
+
+center <- as.numeric(pred_values)
+center
+sqrt_values <- sqrt(values * q)
+sqrt_values
+transformation_matrix <- vectors %*% diag(sqrt_values)
+transformation_matrix
+ellipse_points <- t(transformation_matrix %*% t(circle)) + center
+
+# Tracé
+plot(ellipse_points, type = 'l', xlab = "Prédiction de X1", ylab = "Prédiction de X2", main = "Région de Confiance au Niveau Alpha",xlim = c(-20, 20), ylim = c(-50, 50))
+points(center[1], center[2], col = "red", pch = 19)  # Ajouter le centre
+text(center[1], center[2], labels = "valeurs prédites", pos = 3)
+
+
+library(ellipse)
+
+# Paramètres
+alpha <- 0.05
+mean_vector <- as.numeric(pred_values)  # Extraire le centre de l'ellipse des prédictions
+Sigma
+
+# Générer l'ellipse de confiance
+conf_ellipse <- ellipse(Sigma, level = 0.95, centre = mean_vector, npoints = 10000)
+plot(conf_ellipse)
+
+# Tracé avec limites spécifiées pour les axes x et y
+plot(conf_ellipse, type = "l", xlab = "X1", ylab = "X2", main = "Ellipse de Confiance au Niveau Alpha", xlim = c(-10, 10), ylim = c(-10, 10))
+points(mean_vector[1], mean_vector[2], col = "red", pch = 19)  # Ajouter le centre
+text(mean_vector[1], mean_vector[2], labels = expression(hat(X)), pos = 3)
+
+
+## SUpplisson
+# Construction de la matrice de covariance Sigma pour un modèle ARMA(2,2)
+sigma_x <- sqrt(arma22$fit$sigma2)
+sigma_y <- sqrt(arma22$fit$sigma2 * (1 + sum(arma22$fit$coef[1:2]^2)))
+rho <- arma22$fit$sigma2 * sum(arma22$fit$coef[1:2]) / (sigma_x * sigma_y)
+Sigma <- matrix(c(sigma_x^2, rho * sigma_x * sigma_y, rho * sigma_x * sigma_y, sigma_y^2), nrow = 2)
+
+# Calcul des valeurs propres et vecteurs propres de la matrice de covariance
+eigen_Sigma <- eigen(Sigma)
+values <- eigen_Sigma$values
+vectors <- eigen_Sigma$vectors
+
+# Génération de l'ellipse de confiance
+library(ellipse)
+ell <- ellipse(rho, scale = c(sigma_x, sigma_y), centre = c(Prevision$pred[1], Prevision$pred[2]), level = 0.95, npoints = 10000, xlab = "Prévision à T+1", ylab = "Prévision à T+2")
+
+# Tracé de l'ellipse
+plot(ell)
+points(x = Prevision$pred[1], y = Prevision$pred[2], type = "p", lwd = 7)
