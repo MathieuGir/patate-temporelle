@@ -1,10 +1,4 @@
 ##### Packages ####
-install.packages("zoo")
-install.packages("fUnitRoots")
-install.packages("tseries")
-install.packages("purrr")
-install.packages("urca")
-
 library(zoo)
 library(fUnitRoots)
 library(tseries)
@@ -21,7 +15,7 @@ library(ellipse)
 
 ### Q1: Que représente la série choisie ? ###
 
-setwd("C:/Users/mathi/Documents/ENSAE/2A/2A S2/Séries temporelles linéaires/Projet séries temporelles")
+setwd("C:/Users/mathi/Documents/ENSAE/2A/2A S2/Séries temporelles linéaires/Projet séries temporelles") #changer le chemin d'accès
 serie <- read.csv("biere.csv", header = FALSE, sep = ";", skip = 4, stringsAsFactors = FALSE)
 serie <- serie[,-3]
 colnames(serie) <- c("date", "indices")
@@ -76,11 +70,11 @@ ts_serie_diff <- diff(ts_serie,1) # First difference
 autoplot(ts_serie_diff) + ggtitle("Série temporelle différenciée de l'IPI de la bière")
 
 # La série semble être stationnaire 
+adf_diff <- adfTest(ts_serie_diff, lag=0, type="ct")
+adf_diff
 
 Qtests(adf_diff@test$lm$residuals[0:24], length(adf_diff@test$lm$coefficients))
 
-adf_diff <- adfTest(ts_serie_diff, lag=0, type="ct")
-adf_diff
 
 pp.test(ts_serie_diff)
 
@@ -167,7 +161,6 @@ theta1 <- -arma22$coef[3] #coeff theta1
 sigma_eps <- var_res
 Sigma <- sigma_eps * matrix(c(1, phi1 + theta1, phi1 + theta1, (1 + phi1 + theta1)^2), nrow = 2)
 Sigma #matrice de variance covariance
-
 
 # On calcule le quantile d'ordre 1-alpha d'un chi2
 alpha <- 0.05 # Confidence level
