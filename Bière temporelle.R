@@ -135,10 +135,13 @@ arma21 <- arima(ts_serie_diff, order=c(2,0,1), include.mean = F)
 arma21
 
 #Test ARMA(2,2)
-arma22 <- arima(ts_serie_diff, order=c(2,0,2))
+arma22 <- arima(ts_serie_diff, order=c(2,0,2), include.mean = F)
 arma22 
 
 #En ayant comparé les Sigma carré, la vraisemblance, on retient le modèle ARMA(2,2)
+
+summary(arma22)
+
 
 #On fait le test de portmaneau pour les résidus
 residuals_arma22 <- residuals(arma22)
@@ -146,6 +149,9 @@ ljung_box_test <- Box.test(residuals_arma22, lag = 12, type = "Ljung-Box")
 print(ljung_box_test)
 acf(residuals_arma22)
 autoplot(residuals_arma22)
+#test normalité des résidus
+qqnorm(residuals)
+qqline(residuals)
 
 
 #Question 5
