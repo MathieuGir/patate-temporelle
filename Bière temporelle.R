@@ -168,17 +168,10 @@ sigma_eps <- var_res
 Sigma <- sigma_eps * matrix(c(1, phi1 + theta1, phi1 + theta1, (1 + phi1 + theta1)^2), nrow = 2)
 Sigma #matrice de variance covariance
 
-residuals <- residuals(arma22)
-residuals
-residuals[1]
-residuals[2]
-errors <- c(residuals[2], residuals[2] + (1 + phi1 + theta1) * residuals[1])
-errors
 
 # On calcule le quantile d'ordre 1-alpha d'un chi2
 alpha <- 0.05 # Confidence level
 q <- qchisq(1 - alpha, df = 2)
-
 
 # Région de confiance : 
 
@@ -192,6 +185,8 @@ mean_vector <- as.numeric(pred_values)  # centre de l'ellipse = prédictions
 conf_ellipse <- ellipse(Sigma, level = 0.95, centre = mean_vector, npoints = 10000)
 
 # Tracé avec limites spécifiées pour les axes x et y
-plot(conf_ellipse, type = "l", xlab = "X1", ylab = "X2", main = "Région de confiance au niveau 95%", xlim = c(-20, 20), ylim = c(-50, 50))
-points(mean_vector[1], mean_vector[2], col = "red", pch = 19)  # Ajouter le centre
-text(mean_vector[1], mean_vector[2], labels = expression(hat(X)), pos = 3)
+plot(conf_ellipse, type = "l", xlab = "X1", ylab = "X2", main = "Région de confiance au niveau 95%", xlim = c(-20, 20), ylim = c(-20, 20))
+points(mean_vector[1], mean_vector[2], col = "red", pch = 4)  # Ajouter le centre
+text(mean_vector[1], mean_vector[2], labels = expression(hat(X)), pos = 4)
+points(3.3, 6, col = "darkgreen", pch = 4)
+text(3.3, 6, labels = "vraies valeurs", pos = 4)
